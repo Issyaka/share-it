@@ -13,7 +13,8 @@
         <div class="hero-body">
             <div class="container">
                 <h1 class="title">
-                    Slim Starter
+                {# On affiche une variable avec {{ variable }} #}
+                    Slim Starter - {{ database_name }}
                 </h1>
                 <h2 class="subtitle">
                     Preconfigured Slim app with PHP-DI, Twig and Doctrine DBAL.
@@ -29,6 +30,19 @@
                     <h3 class="title has-text-centered">It works !</h3>
                     <div class="content">
                         <p class="has-text-centered">This is the default page, go build something great !</p>
+
+                        {# On effectue les boucles avec la structure for in 
+                           Il faut ouvrir la boucle avec {% %}
+                           On indique la fermture de la boucle avec un bloc: endfor
+                        #}
+                        {% for user in users %}
+                            {{ user }}<br>
+
+                        {% endfor %}
+
+                        {{ xss|raw }}
+
+                        <a href="{{ link('test') }}">Test</a>
 
                         <figure class="image">
                             <img src="https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif" alt="Welcome GIF">
