@@ -17,9 +17,16 @@ use Slim\Psr7\Factory\StreamFactory;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
+use Whoops\Handler\PrettyPageHandler;
+use Whoops\Run;
 
 // Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
+
+// Error handling
+$whoops = new Run();
+$whoops->pushHandler(new PrettyPageHandler());
+$whoops->register();
 
 // Application & Service Container
 $app = Bridge::create();

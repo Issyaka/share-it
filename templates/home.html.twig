@@ -7,5 +7,18 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Share It!</h1>
+    <h1>Insérez votre fichier ici !</h1>
+
+<form action="{{ link('homepage') }}" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile" name="fichier">
+            <label class="custom-file-label" for="customFile">Sélectionnez un fichier</label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Envoyer
+    </button>
+</form>
 {% endblock %}
