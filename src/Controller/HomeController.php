@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Database\FichierManager;
 use App\File\UploadService;
 use Doctrine\DBAL\Connection;
+
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 // use Psr\Http\Message\UploadedFileFactoryInterface;
@@ -15,7 +17,7 @@ class HomeController extends AbstractController
     (ResponseInterface $response,
      ServerRequestInterface $request,
      UploadService $uploadService,
-     Connection $connection)
+     FichierManager $fichierManager)
     {
        // Récupérer les fichiers envoyés:
        $listeFichiers = $request->getUploadedFiles();
@@ -29,44 +31,58 @@ class HomeController extends AbstractController
         $nouveauNom = $uploadService->saveFile($fichier);
 
         // Enregistrer les infos du fichier en base de données
-        $connection->insert('fichier', [
-            'nom' => $nouveauNom,
-            'nom_original' => $fichier->getClientFilename(),
-        ]);
-
-        $connection->executeStatement('INSERT INTO fichier (nom, nom_original) VALUES (:nom, :nom_original)', [
-            'nom' => $nouveauNom,
-            'nom_original' => $fichier->getClientFilename(),
-        ]);
-
-        $query = $connection->prepare('INSERT INTO fichier (nom, nom_original) VALUES (:nom, :nom_original)');
-        $query->bindValue('nom', $nouveauNom);
-        $query->bindValue('nom_original', $fichier->getClientFilename());
-        $query->execute();
-
-        $queryBuilder = $connection->createQueryBuilder();
-        $queryBuilder
-            ->insert('fichier')
-            ->values([
-                'nom' => $nouveauNom,
-                'nom_original' => $fichier->getClientFilename(),
-            ])
-
-        ;
-        $queryBuilder->execute();
-
-        // Afficher un message à l'utilisateur
+        $fichier = $fichierManager->createFichier($nouveauNom, $fichier->getClientFilename());
         
+        // Redirection vers la page de succès
+        return $this->redirect('success', [
+            'id' => $fichier->getId(),
+            ]);
     }
 
-      // Pour récupérer les fichiers envoyés :
-      return $this->template($response, 'home.html.twig');
+        return $this->template($response, 'home.html.twig');
 
     }
 
-    public function download(ResponseInterface $response, int $id)
+
+    /**
+     * Vérifier que l'identifiant (argument $id) correspond à un fichier existant
+     * Si ce n'est pas le cas, rediriger vers une route qui affichera un message d'erreur
+     */
+
+        public function success(ResponseInterface $response, int $id,  FichierManager $fichierManager)
+        {
+            $fichier = $fichierManager->getById($id);
+            if ($fichier === null) {
+                return $this->redirect('file-error');
+            }
+
+            return $this->template($response, 'success.html.twig', [
+                'fichier' => $fichier
+            ]);         
+        }
+
+        public function fileError(ResponseInterface $response)
+        {
+            return $this->template($response, 'file-error.html.twig');
+        }
+
+    public function download(ResponseInterface $response, int $id, FichierManager $fichierManager)
     {
-        $response->getBody()->write(sprintf('Identifiant: %d', $id));
+
+        $file = $fichierManager->getById($id);
+        if ($file === null) {
+            return $this->redirect('file-error');
+        }
+
+        $original_filename = $file->getNomOriginal();
+        if (file_exists($original_filename)) {
+        
+            header('Content-Disposition: attachment; filename="' . basename($original_filename) . '"');   
+            readfile($original_filename);
+            exit;
+    
+        }
+
         return $response;
     }
 }

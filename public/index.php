@@ -11,17 +11,27 @@ use Slim\App;
 
 // App configuration
 require_once __DIR__ . '/../config/bootstrap.php';
- // $app->setBasePath ('slim-app');
+
 
 // Application routes
-// $app
+ //$app
    // ->get('/', [HomeController::class, 'homepage'])
-   // ->setName('homepage')
-//  ;
+    //->setName('homepage')
+ // ;
 
 $app
     ->map(['GET', 'POST'], '/', [HomeController::class, 'homepage'])
     ->setName('homepage')
+;
+
+$app
+    ->get('/success/{id:\d+}', [HomeController::class, 'success'])
+    ->setName('success')
+;
+
+$app
+    ->get('/file-error', [HomeController::class, 'fileError'])
+    ->setName('file-error')
 ;
 
 // On peut indiquer des paramètres dans les routes entre accolades: {param}
